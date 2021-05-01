@@ -7,9 +7,10 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import com.example.generalmotors.R
-import com.example.generalmotors.data.BluetoothDevice
+import android.bluetooth.BluetoothDevice
 import com.example.generalmotors.data.BluetoothDevices
 import com.example.generalmotors.service.BLEService
 
@@ -25,6 +26,7 @@ class ItemDetailFragment : Fragment() {
      * The dummy content this fragment is presenting.
      */
     private var item: BluetoothDevice? = null
+    private lateinit var connectButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +34,7 @@ class ItemDetailFragment : Fragment() {
         arguments?.let {
             if (it.containsKey(ARG_ITEM_ID)) {
                 item = BluetoothDevices.ITEM_MAP[it.getString(ARG_ITEM_ID)]
-                activity?.findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)?.title = item?.deviceName
+                activity?.findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)?.title = BLEService.getDeviceName(item?.name)
             }
         }
     }
@@ -41,8 +43,14 @@ class ItemDetailFragment : Fragment() {
         val rootView = inflater.inflate(R.layout.item_detail, container, false)
 
         item?.let {
-            rootView.findViewById<TextView>(R.id.item_detail).text = BLEService.GetDeviceType(it.deviceType)
+            var device = it
+            rootView.findViewById<TextView>(R.id.item_detail).text = BLEService.GetDeviceType(device.type)
+            connectButton = rootView.findViewById(R.id.connect_button)
+            connectButton.setOnClickListener {
+                device.connectGatt(context, false, BLEService.gattCallback)
+            }
         }
+
 
         return rootView
     }

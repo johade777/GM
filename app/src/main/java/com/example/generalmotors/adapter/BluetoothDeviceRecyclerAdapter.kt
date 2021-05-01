@@ -1,5 +1,6 @@
 package com.example.generalmotors.adapter
 
+import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
@@ -7,8 +8,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.generalmotors.R
-import com.example.generalmotors.data.BluetoothDevice
 import com.example.generalmotors.data.BluetoothDevices
+import com.example.generalmotors.service.BLEService
 import com.example.generalmotors.view.ItemDetailActivity
 import com.example.generalmotors.view.ItemDetailFragment
 import com.example.generalmotors.view.ItemListActivity
@@ -30,8 +31,8 @@ class BluetoothDeviceRecyclerAdapter(private val parentActivity: ItemListActivit
 
     override fun onBindViewHolder(holder: BluetoothDeviceViewHolder, position: Int) {
         val item = values[position]
-        holder.idView.text = item.deviceName
-        holder.contentView.text = item.content
+        holder.idView.text = BLEService.getDeviceName(item.name)
+        holder.contentView.text = item.address
 
         with(holder.itemView) {
             tag = item

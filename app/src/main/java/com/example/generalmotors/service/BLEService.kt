@@ -2,18 +2,17 @@ package com.example.generalmotors.service
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
+import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.generalmotors.data.BluetoothDevice
 import com.example.generalmotors.util.hasManifestPermission
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
@@ -74,15 +73,15 @@ class BLEService(context: Context) {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             with(result.device) {
                 val foundName = if (name == null) "N/A" else name
-                val foundDevice = BluetoothDevice(
-                    foundName,
-                    address,
-                    address,
-                    result.device.type
-                )
-                if(!foundBluetoothDevices.contains(foundDevice) && foundDevice.deviceType == BLE_DEVICE){
-                    foundBluetoothDevices.add(foundDevice)
-                    foundDeviceObservable.onNext(foundDevice)
+//                val foundDevice = BluetoothDevice(
+//                    foundName,
+//                    address,
+//                    address,
+//                    result.device.type
+//                )
+                if(!foundBluetoothDevices.contains(this) && this.type == BLE_DEVICE){
+                    foundBluetoothDevices.add(this)
+                    foundDeviceObservable.onNext(this)
                 }
             }
         }
@@ -114,9 +113,9 @@ class BLEService(context: Context) {
         alertDialog.setTitle("AlertDialog")
         alertDialog.setMessage("Do you wanna close this Dialog?")
         alertDialog.setPositiveButton("yes") { _, _ ->
-            activity.requestPermission(
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                FINE_LOCATION_REQUEST
+           requestPermission(android.Manifest.permission.ACCESS_FINE_LOCATION,
+                   FINE_LOCATION_REQUEST,
+                   activity
             )
         }
         val alert: AlertDialog = alertDialog.create()
@@ -124,8 +123,8 @@ class BLEService(context: Context) {
         alert.show()
     }
 
-    private fun Activity.requestPermission(permission: String, requestCode: Int) {
-        ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode)
+    private fun requestPermission(permission: String, requestCode: Int, activity: Activity) {
+        ActivityCompat.requestPermissions(activity, arrayOf(permission), requestCode)
     }
 
     companion object {
@@ -135,6 +134,29 @@ class BLEService(context: Context) {
                 BLE_DEVICE -> "Low Energy Device"
                 DUAL_DEVICE -> "Dual Device"
                 else -> "Unknown Device Type"
+            }
+        }
+
+        fun getDeviceName(name: String?) : String{
+            return if (name == "" || name == null) "N/A" else name
+        }
+
+        val gattCallback = object : BluetoothGattCallback() {
+            override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+                val deviceAddress = gatt.device.address
+
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    if (newState == BluetoothProfile.STATE_CONNECTED) {
+                        Log.w("BluetoothGattCallback", "Successfully connected to $deviceAddress")
+                        // TODO: Store a reference to BluetoothGatt
+                    } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                        Log.w("BluetoothGattCallback", "Successfully disconnected from $deviceAddress")
+                        gatt.close()
+                    }
+                } else {
+                    Log.w("BluetoothGattCallback", "Error $status encountered for $deviceAddress! Disconnecting...")
+                    gatt.close()
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.example.generalmotors.data
 
 import java.util.ArrayList
 import java.util.HashMap
+import android.bluetooth.BluetoothDevice
 
 object BluetoothDevices {
     val ITEMS: MutableList<BluetoothDevice> = ArrayList()
