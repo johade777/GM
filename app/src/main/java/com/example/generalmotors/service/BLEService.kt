@@ -128,7 +128,10 @@ class BLEService(context: Context) {
     }
 
     companion object {
-        fun GetDeviceType(deviceTypeInteger: Int): String {
+        var connectionStatus: BehaviorSubject<Int> = BehaviorSubject.create()
+        private var connectedDevice: BluetoothDevice? = null
+
+        fun getDeviceType(deviceTypeInteger: Int): String {
             return when (deviceTypeInteger) {
                 CLASSIC_DEVICE -> "Classic Device"
                 BLE_DEVICE -> "Low Energy Device"
@@ -141,6 +144,14 @@ class BLEService(context: Context) {
             return if (name == "" || name == null) "N/A" else name
         }
 
+        private fun setConnectedDevice(device: BluetoothDevice){
+            connectedDevice = device
+        }
+
+        fun getConnectedDevice(): BluetoothDevice? {
+            return connectedDevice
+        }
+
         val gattCallback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                 val deviceAddress = gatt.device.address
@@ -148,7 +159,7 @@ class BLEService(context: Context) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
                         Log.w("BluetoothGattCallback", "Successfully connected to $deviceAddress")
-                        // TODO: Store a reference to BluetoothGatt
+                        setConnectedDevice(gatt.device)
                     } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                         Log.w("BluetoothGattCallback", "Successfully disconnected from $deviceAddress")
                         gatt.close()
@@ -157,6 +168,8 @@ class BLEService(context: Context) {
                     Log.w("BluetoothGattCallback", "Error $status encountered for $deviceAddress! Disconnecting...")
                     gatt.close()
                 }
+
+                connectionStatus.onNext(newState)
             }
         }
     }
