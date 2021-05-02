@@ -29,7 +29,7 @@ class DeviceActivity : AppCompatActivity() {
         setSupportActionBar(findViewById(R.id.detail_toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        deviceId = intent.getStringExtra(ItemDetailFragment.ARG_ITEM_ID)!!
+        deviceId = intent.getStringExtra("item_id")!!
         device = BluetoothDevices.ITEM_MAP[deviceId]!!
 
         findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)?.title = BLEService.getDeviceName(BLEService.getDeviceName(device.name))
@@ -57,7 +57,7 @@ class DeviceActivity : AppCompatActivity() {
 
     private fun connected(){
         runOnUiThread {
-            Toast.makeText(this, "Successfully connected to ${BLEService.getDeviceName(connectedDevice?.name)}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Connected to ${BLEService.getDeviceName(connectedDevice?.name)}", Toast.LENGTH_SHORT).show()
             connectButton.text = "Disconnect"
             unlockButton.visibility = View.VISIBLE
         }
@@ -68,7 +68,7 @@ class DeviceActivity : AppCompatActivity() {
 
     private fun disconnected(){
         runOnUiThread {
-            Toast.makeText(this, "Successfully disconnected from ${BLEService.getDeviceName(connectedDevice?.name)}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Disconnected from ${BLEService.getDeviceName(connectedDevice?.name)}", Toast.LENGTH_SHORT).show()
             connectedDevice = null
             connectButton.text = "Connect"
             unlockButton.visibility = View.GONE

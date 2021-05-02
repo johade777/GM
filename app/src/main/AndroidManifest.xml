@@ -18,15 +18,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.GeneralMotors">
-        <activity android:name=".view.DeviceActivity"
-            android:theme="@style/Theme.GeneralMotors.NoActionBar"></activity>
+        <activity
+            android:name=".view.DeviceActivity"
+            android:theme="@style/Theme.GeneralMotors.NoActionBar" />
         <activity
             android:name=".view.ItemListActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.GeneralMotors.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

@@ -16,7 +16,6 @@ import androidx.lifecycle.MutableLiveData
 import com.example.generalmotors.util.hasManifestPermission
 import com.example.generalmotors.util.isWritable
 import com.example.generalmotors.util.isWritableWithoutResponse
-import com.example.generalmotors.util.printGattTable
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import java.util.*
