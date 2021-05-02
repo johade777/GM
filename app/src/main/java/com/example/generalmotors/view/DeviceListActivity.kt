@@ -34,7 +34,7 @@ class ItemListActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_item_list)
+        setContentView(R.layout.activity_device_list)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         toolbar.title = ""

@@ -72,13 +72,6 @@ class BLEService(context: Context) {
     private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             with(result.device) {
-                val foundName = if (name == null) "N/A" else name
-//                val foundDevice = BluetoothDevice(
-//                    foundName,
-//                    address,
-//                    address,
-//                    result.device.type
-//                )
                 if(!foundBluetoothDevices.contains(this) && this.type == BLE_DEVICE){
                     foundBluetoothDevices.add(this)
                     foundDeviceObservable.onNext(this)
@@ -130,6 +123,7 @@ class BLEService(context: Context) {
     companion object {
         var connectionStatus: BehaviorSubject<Int> = BehaviorSubject.create()
         private var connectedDevice: BluetoothDevice? = null
+        private var connectedGatt: BluetoothGatt? = null
 
         fun getDeviceType(deviceTypeInteger: Int): String {
             return when (deviceTypeInteger) {
@@ -155,6 +149,7 @@ class BLEService(context: Context) {
         val gattCallback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                 val deviceAddress = gatt.device.address
+                connectedGatt = gatt
 
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
@@ -165,11 +160,18 @@ class BLEService(context: Context) {
                         gatt.close()
                     }
                 } else {
-                    Log.w("BluetoothGattCallback", "Error $status encountered for $deviceAddress! Disconnecting...")
+                    Log.w("BluetoothGattCallback", "Error $status encountered for  deviceAddress! Disconnecting...")
                     gatt.close()
                 }
 
+
                 connectionStatus.onNext(newState)
+            }
+        }
+
+        fun closeBlueConnection(){
+            if (connectedGatt != null) {
+                connectedGatt!!.disconnect()
             }
         }
     }

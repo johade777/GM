@@ -58,7 +58,7 @@ class ItemDetailFragment : Fragment() {
             connectButton.text = "Disconnect"
         }
         connectButton.setOnClickListener {
-            BLEService.gattCallback.
+//            BLEService.gattCallback.
         }
     }
 

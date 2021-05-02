@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.generalmotors.R
 import com.example.generalmotors.data.BluetoothDevices
 import com.example.generalmotors.service.BLEService
+import com.example.generalmotors.view.DeviceActivity
 import com.example.generalmotors.view.ItemDetailActivity
 import com.example.generalmotors.view.ItemDetailFragment
 import com.example.generalmotors.view.ItemListActivity
@@ -18,7 +19,7 @@ class BluetoothDeviceRecyclerAdapter(private val parentActivity: ItemListActivit
 
     private val onClickListener: View.OnClickListener = View.OnClickListener { v ->
         val item = v.tag as BluetoothDevice
-            val intent = Intent(v.context, ItemDetailActivity::class.java).apply {
+            val intent = Intent(v.context, DeviceActivity::class.java).apply {
                 putExtra(ItemDetailFragment.ARG_ITEM_ID, item.address)
             }
             v.context.startActivity(intent)
