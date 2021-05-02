@@ -22,8 +22,6 @@ const val BLE_ENABLE_REQUEST = 1
 const val FINE_LOCATION_REQUEST = 2
 
 class ItemListActivity : AppCompatActivity() {
-
-    private var twoPane: Boolean = false
     private lateinit var recyclerView: RecyclerView
     private lateinit var scanButton: Button
     private lateinit var loadingIcon: ProgressBar
@@ -61,17 +59,12 @@ class ItemListActivity : AppCompatActivity() {
             }
         }
 
-        if (findViewById<NestedScrollView>(R.id.item_detail_container) != null) {
-            twoPane = true
-        }
-
         recyclerView = findViewById(R.id.item_list)
-        adapter = BluetoothDeviceRecyclerAdapter(this, BluetoothDevices.ITEMS, twoPane)
+        adapter = BluetoothDeviceRecyclerAdapter(this, BluetoothDevices.ITEMS, viewModel)
         recyclerView.adapter = adapter
 
         viewModel.getDeviceObservable().subscribe{
-                var temp = it
-                adapter.addDevice(temp)
+                adapter.addDevice(it)
         }
     }
 

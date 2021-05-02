@@ -14,9 +14,12 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.generalmotors.util.hasManifestPermission
+import com.example.generalmotors.util.isWritable
+import com.example.generalmotors.util.isWritableWithoutResponse
+import com.example.generalmotors.util.printGattTable
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
-import java.util.ArrayList
+import java.util.*
 
 const val BLE_ENABLE_REQUEST = 1
 const val FINE_LOCATION_REQUEST = 2
@@ -24,6 +27,10 @@ const val FINE_LOCATION_REQUEST = 2
 const val CLASSIC_DEVICE = 1
 const val BLE_DEVICE = 2
 const val DUAL_DEVICE = 3
+
+//Assumption
+const val EP1_UNLOCK_SERVICE_UUID = "00001800-0000-1000-8000-00805f9b34fb"
+const val EP1_UNLOCK_CHARACTERISTIC_UUID = "00002a00-0000-1000-8000-00805f9b34fb"
 
 class BLEService(context: Context) {
 
@@ -124,6 +131,8 @@ class BLEService(context: Context) {
         var connectionStatus: BehaviorSubject<Int> = BehaviorSubject.create()
         private var connectedDevice: BluetoothDevice? = null
         private var connectedGatt: BluetoothGatt? = null
+        private var deviceCharacteristics = mutableMapOf<String, BluetoothGattCharacteristic>()
+        private var deviceServices = mutableMapOf<String, BluetoothGattService>()
 
         fun getDeviceType(deviceTypeInteger: Int): String {
             return when (deviceTypeInteger) {
@@ -155,6 +164,7 @@ class BLEService(context: Context) {
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
                         Log.w("BluetoothGattCallback", "Successfully connected to $deviceAddress")
                         setConnectedDevice(gatt.device)
+                        gatt.discoverServices()
                     } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                         Log.w("BluetoothGattCallback", "Successfully disconnected from $deviceAddress")
                         gatt.close()
@@ -162,16 +172,57 @@ class BLEService(context: Context) {
                 } else {
                     Log.w("BluetoothGattCallback", "Error $status encountered for  deviceAddress! Disconnecting...")
                     gatt.close()
+                    connectionStatus.onNext(-1)
                 }
-
 
                 connectionStatus.onNext(newState)
             }
+
+            override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+                super.onServicesDiscovered(gatt, status)
+                if(gatt != null){
+                    val discoveredServices = mutableMapOf<String, BluetoothGattService>()
+                    for(service in gatt.services){
+                        if(!discoveredServices.containsKey(service.uuid.toString())) {
+                            discoveredServices[service.uuid.toString()] = service
+                        }
+                    }
+                    deviceServices = discoveredServices
+                }
+            }
+
+            override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
+                super.onCharacteristicWrite(gatt, characteristic, status)
+            }
+        }
+
+        private fun writeCharacteristic(characteristic: BluetoothGattCharacteristic, payload: ByteArray) {
+            val writeType = when {
+                characteristic.isWritable() -> BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                characteristic.isWritableWithoutResponse() -> {
+                    BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+                }
+                else -> error("Characteristic ${characteristic.uuid} cannot be written to")
+            }
+
+            connectedGatt?.let { gatt ->
+                characteristic.writeType = writeType
+                characteristic.value = payload
+                gatt.writeCharacteristic(characteristic)
+            } ?: error("Not connected to a BLE device!")
         }
 
         fun closeBlueConnection(){
             if (connectedGatt != null) {
                 connectedGatt!!.disconnect()
+            }
+        }
+
+        fun unlockEP1(){
+            val unlockCharacteristicUUID = UUID.fromString(EP1_UNLOCK_CHARACTERISTIC_UUID)
+            val unlockCharacteristic = deviceServices[EP1_UNLOCK_SERVICE_UUID]?.getCharacteristic(unlockCharacteristicUUID)
+            if(unlockCharacteristic != null) {
+                writeCharacteristic(unlockCharacteristic, byteArrayOf(1))
             }
         }
     }

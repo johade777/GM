@@ -14,14 +14,16 @@ import com.example.generalmotors.view.DeviceActivity
 import com.example.generalmotors.view.ItemDetailActivity
 import com.example.generalmotors.view.ItemDetailFragment
 import com.example.generalmotors.view.ItemListActivity
+import com.example.generalmotors.viewmodel.DeviceListViewModel
 
-class BluetoothDeviceRecyclerAdapter(private val parentActivity: ItemListActivity, private var values: MutableList<BluetoothDevice>, private val twoPane: Boolean) : RecyclerView.Adapter<BluetoothDeviceRecyclerAdapter.BluetoothDeviceViewHolder>() {
+class BluetoothDeviceRecyclerAdapter(private val parentActivity: ItemListActivity, private var values: MutableList<BluetoothDevice>, private var viewModel: DeviceListViewModel) : RecyclerView.Adapter<BluetoothDeviceRecyclerAdapter.BluetoothDeviceViewHolder>() {
 
     private val onClickListener: View.OnClickListener = View.OnClickListener { v ->
         val item = v.tag as BluetoothDevice
             val intent = Intent(v.context, DeviceActivity::class.java).apply {
                 putExtra(ItemDetailFragment.ARG_ITEM_ID, item.address)
             }
+            viewModel.stopScan()
             v.context.startActivity(intent)
     }
 
